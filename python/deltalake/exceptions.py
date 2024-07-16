@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from ._internal import CommitFailedError as CommitFailedError
 from ._internal import DeltaError as DeltaError
 from ._internal import DeltaProtocolError as DeltaProtocolError

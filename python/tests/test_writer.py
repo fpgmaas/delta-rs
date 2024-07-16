@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import itertools
 import json
 import os
@@ -7,7 +9,7 @@ import threading
 from datetime import date, datetime
 from decimal import Decimal
 from math import inf
-from typing import Any, Dict, Iterable, List, Literal
+from typing import Any, Iterable, Literal
 from unittest.mock import Mock
 
 import pyarrow as pa
@@ -654,7 +656,7 @@ def get_log_path(table: DeltaTable) -> str:
     return table._table.table_uri() + "/_delta_log/" + ("0" * 20 + ".json")
 
 
-def get_add_actions(table: DeltaTable) -> List[str]:
+def get_add_actions(table: DeltaTable) -> list[str]:
     log_path = get_log_path(table)
 
     actions = []
@@ -677,7 +679,7 @@ def get_stats(table: DeltaTable):
         raise AssertionError("No add action found!")
 
 
-def get_add_paths(table: DeltaTable) -> List[str]:
+def get_add_paths(table: DeltaTable) -> list[str]:
     return [action["path"] for action in get_add_actions(table)]
 
 
@@ -773,7 +775,7 @@ def test_writer_fails_on_protocol(
 def test_writer_with_max_rows(
     tmp_path: pathlib.Path, row_count: int, rows_per_file: int, expected_files: int
 ):
-    def get_multifile_stats(table: DeltaTable) -> Iterable[Dict]:
+    def get_multifile_stats(table: DeltaTable) -> Iterable[dict]:
         log_path = get_log_path(table)
 
         # Should only have single add entry

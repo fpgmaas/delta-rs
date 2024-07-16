@@ -3,6 +3,7 @@ sidebar.
 
 Loosely based on https://github.com/astropy/astropy/pull/347
 """
+from __future__ import annotations
 
 import os
 import warnings

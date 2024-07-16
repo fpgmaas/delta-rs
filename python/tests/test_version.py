@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from deltalake import rust_core_version
 
 

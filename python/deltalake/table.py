@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import warnings
 from dataclasses import dataclass
@@ -7,14 +9,12 @@ from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
-    Dict,
     Generator,
     Iterable,
     List,
     Literal,
     Mapping,
     NamedTuple,
-    Optional,
     Tuple,
     Union,
 )
@@ -82,7 +82,7 @@ class Compression(Enum):
                 f"{value} is not a valid Compression. Valid values are: {[item.value for item in Compression]}"
             )
 
-    def get_level_range(self) -> Tuple[int, int]:
+    def get_level_range(self) -> tuple[int, int]:
         if self == Compression.GZIP:
             MIN_LEVEL = 0
             MAX_LEVEL = 10
@@ -123,23 +123,13 @@ class WriterProperties:
 
     def __init__(
         self,
-        data_page_size_limit: Optional[int] = None,
-        dictionary_page_size_limit: Optional[int] = None,
-        data_page_row_count_limit: Optional[int] = None,
-        write_batch_size: Optional[int] = None,
-        max_row_group_size: Optional[int] = None,
-        compression: Optional[
-            Literal[
-                "UNCOMPRESSED",
-                "SNAPPY",
-                "GZIP",
-                "BROTLI",
-                "LZ4",
-                "ZSTD",
-                "LZ4_RAW",
-            ]
-        ] = None,
-        compression_level: Optional[int] = None,
+        data_page_size_limit: int | None = None,
+        dictionary_page_size_limit: int | None = None,
+        data_page_row_count_limit: int | None = None,
+        write_batch_size: int | None = None,
+        max_row_group_size: int | None = None,
+        compression: Literal["UNCOMPRESSED", "SNAPPY", "GZIP", "BROTLI", "LZ4", "ZSTD", "LZ4_RAW"] | None = None,
+        compression_level: int | None = None,
     ):
         """Create a Writer Properties instance for the Rust parquet writer:
 
@@ -192,7 +182,7 @@ class WriterProperties:
             f"max_row_group_size: {self.max_row_group_size}, compression: {self.compression})"
         )
 
-    def _to_dict(self) -> Dict[str, Optional[str]]:
+    def _to_dict(self) -> dict[str, str | None]:
         values = {}
         for key, value in self.__dict__.items():
             values[key] = str(value) if isinstance(value, int) else value
@@ -222,7 +212,7 @@ class Metadata:
         return self._metadata.description
 
     @property
-    def partition_columns(self) -> List[str]:
+    def partition_columns(self) -> list[str]:
         """Return an array containing the names of the partitioned columns of the DeltaTable."""
         return self._metadata.partition_columns
 
@@ -234,7 +224,7 @@ class Metadata:
         return self._metadata.created_time
 
     @property
-    def configuration(self) -> Dict[str, str]:
+    def configuration(self) -> dict[str, str]:
         """Return the DeltaTable properties."""
         return self._metadata.configuration
 
@@ -249,8 +239,8 @@ class Metadata:
 class ProtocolVersions(NamedTuple):
     min_reader_version: int
     min_writer_version: int
-    writer_features: Optional[List[str]]
-    reader_features: Optional[List[str]]
+    writer_features: list[str] | None
+    reader_features: list[str] | None
 
 
 FilterLiteralType = Tuple[str, str, Any]
@@ -268,11 +258,11 @@ class DeltaTable:
 
     def __init__(
         self,
-        table_uri: Union[str, Path, "os.PathLike[str]"],
-        version: Optional[int] = None,
-        storage_options: Optional[Dict[str, str]] = None,
+        table_uri: str | Path | "os.PathLike[str]",
+        version: int | None = None,
+        storage_options: dict[str, str] | None = None,
         without_files: bool = False,
-        log_buffer_size: Optional[int] = None,
+        log_buffer_size: int | None = None,
     ):
         """
         Create the Delta Table from a path with an optional version.
@@ -308,9 +298,9 @@ class DeltaTable:
         data_catalog: DataCatalog,
         database_name: str,
         table_name: str,
-        data_catalog_id: Optional[str] = None,
-        version: Optional[int] = None,
-        log_buffer_size: Optional[int] = None,
+        data_catalog_id: str | None = None,
+        version: int | None = None,
+        log_buffer_size: int | None = None,
     ) -> "DeltaTable":
         """
         Create the Delta Table from a Data Catalog.
@@ -340,15 +330,15 @@ class DeltaTable:
     @classmethod
     def create(
         cls,
-        table_uri: Union[str, Path],
-        schema: Union[pyarrow.Schema, DeltaSchema],
+        table_uri: str | Path,
+        schema: pyarrow.Schema | DeltaSchema,
         mode: Literal["error", "append", "overwrite", "ignore"] = "error",
-        partition_by: Optional[Union[List[str], str]] = None,
-        name: Optional[str] = None,
-        description: Optional[str] = None,
-        configuration: Optional[Mapping[str, Optional[str]]] = None,
-        storage_options: Optional[Dict[str, str]] = None,
-        custom_metadata: Optional[Dict[str, str]] = None,
+        partition_by: list[str] | str | None = None,
+        name: str | None = None,
+        description: str | None = None,
+        configuration: Mapping[str, str | None] | None = None,
+        storage_options: dict[str, str] | None = None,
+        custom_metadata: dict[str, str] | None = None,
         raise_if_key_not_exists: bool = True,
     ) -> "DeltaTable":
         """`CREATE` or `CREATE_OR_REPLACE` a delta table given a table_uri.
@@ -420,8 +410,8 @@ class DeltaTable:
         return self._table.version()
 
     def files(
-        self, partition_filters: Optional[List[Tuple[str, str, Any]]] = None
-    ) -> List[str]:
+        self, partition_filters: list[tuple[str, str, Any]] | None = None
+    ) -> list[str]:
         """
         Get the .parquet files of the DeltaTable.
 
@@ -455,8 +445,8 @@ class DeltaTable:
         return self._table.files(self.__stringify_partition_values(partition_filters))
 
     def file_uris(
-        self, partition_filters: Optional[List[Tuple[str, str, Any]]] = None
-    ) -> List[str]:
+        self, partition_filters: list[tuple[str, str, Any]] | None = None
+    ) -> list[str]:
         """
         Get the list of files as absolute URIs, including the scheme (e.g. "s3://").
 
@@ -495,7 +485,7 @@ class DeltaTable:
 
     file_uris.__doc__ = ""
 
-    def load_as_version(self, version: Union[int, str, datetime]) -> None:
+    def load_as_version(self, version: int | str | datetime) -> None:
         """
         Load/time travel a DeltaTable to a specified version number, or a timestamp version of the table. If a
         string is passed then the argument should be an RFC 3339 and ISO 8601 date and time string format.
@@ -582,9 +572,9 @@ class DeltaTable:
     def load_cdf(
         self,
         starting_version: int = 0,
-        ending_version: Optional[int] = None,
-        starting_timestamp: Optional[str] = None,
-        ending_timestamp: Optional[str] = None,
+        ending_version: int | None = None,
+        starting_timestamp: str | None = None,
+        ending_timestamp: str | None = None,
     ) -> pyarrow.RecordBatchReader:
         return self._table.load_cdf(
             starting_version, ending_version, starting_timestamp, ending_timestamp
@@ -603,7 +593,7 @@ class DeltaTable:
         """
         return self._table.schema
 
-    def files_by_partitions(self, partition_filters: Optional[FilterType]) -> List[str]:
+    def files_by_partitions(self, partition_filters: FilterType | None) -> list[str]:
         """
         Get the files for each partition
 
@@ -628,7 +618,7 @@ class DeltaTable:
         """
         return ProtocolVersions(*self._table.protocol_versions())
 
-    def history(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+    def history(self, limit: int | None = None) -> list[dict[str, Any]]:
         """
         Run the history command on the DeltaTable.
         The operations are returned in reverse chronological order.
@@ -641,8 +631,8 @@ class DeltaTable:
         """
 
         def _backwards_enumerate(
-            iterable: List[str], start_end: int
-        ) -> Generator[Tuple[int, str], None, None]:
+            iterable: list[str], start_end: int
+        ) -> Generator[tuple[int, str], None, None]:
             n = start_end
             for elem in iterable:
                 yield n, elem
@@ -660,11 +650,11 @@ class DeltaTable:
 
     def vacuum(
         self,
-        retention_hours: Optional[int] = None,
+        retention_hours: int | None = None,
         dry_run: bool = True,
         enforce_retention_duration: bool = True,
-        custom_metadata: Optional[Dict[str, str]] = None,
-    ) -> List[str]:
+        custom_metadata: dict[str, str] | None = None,
+    ) -> list[str]:
         """
         Run the Vacuum command on the Delta Table: list and delete files no longer referenced by the Delta table and are older than the retention threshold.
 
@@ -689,15 +679,13 @@ class DeltaTable:
 
     def update(
         self,
-        updates: Optional[Dict[str, str]] = None,
-        new_values: Optional[
-            Dict[str, Union[int, float, str, datetime, bool, List[Any]]]
-        ] = None,
-        predicate: Optional[str] = None,
-        writer_properties: Optional[WriterProperties] = None,
+        updates: dict[str, str] | None = None,
+        new_values: dict[str, int | float | str | datetime | bool | list[Any]] | None = None,
+        predicate: str | None = None,
+        writer_properties: WriterProperties | None = None,
         error_on_type_mismatch: bool = True,
-        custom_metadata: Optional[Dict[str, str]] = None,
-    ) -> Dict[str, Any]:
+        custom_metadata: dict[str, str] | None = None,
+    ) -> dict[str, Any]:
         """`UPDATE` records in the Delta Table that matches an optional predicate. Either updates or new_values needs
         to be passed for it to execute.
 
@@ -813,20 +801,14 @@ class DeltaTable:
 
     def merge(
         self,
-        source: Union[
-            pyarrow.Table,
-            pyarrow.RecordBatch,
-            pyarrow.RecordBatchReader,
-            ds.Dataset,
-            "pd.DataFrame",
-        ],
+        source: pyarrow.Table | pyarrow.RecordBatch | pyarrow.RecordBatchReader | ds.Dataset | "pd.DataFrame",
         predicate: str,
-        source_alias: Optional[str] = None,
-        target_alias: Optional[str] = None,
+        source_alias: str | None = None,
+        target_alias: str | None = None,
         error_on_type_mismatch: bool = True,
-        writer_properties: Optional[WriterProperties] = None,
+        writer_properties: WriterProperties | None = None,
         large_dtypes: bool = False,
-        custom_metadata: Optional[Dict[str, str]] = None,
+        custom_metadata: dict[str, str] | None = None,
     ) -> "TableMerger":
         """Pass the source data which you want to merge on the target delta table, providing a
         predicate in SQL query like format. You can also specify on what to do when the underlying data types do not
@@ -893,12 +875,12 @@ class DeltaTable:
 
     def restore(
         self,
-        target: Union[int, datetime, str],
+        target: int | datetime | str,
         *,
         ignore_missing_files: bool = False,
         protocol_downgrade_allowed: bool = False,
-        custom_metadata: Optional[Dict[str, str]] = None,
-    ) -> Dict[str, Any]:
+        custom_metadata: dict[str, str] | None = None,
+    ) -> dict[str, Any]:
         """
         Run the Restore command on the Delta Table: restore table to a given version or datetime.
 
@@ -929,10 +911,10 @@ class DeltaTable:
 
     def to_pyarrow_dataset(
         self,
-        partitions: Optional[List[Tuple[str, str, Any]]] = None,
-        filesystem: Optional[Union[str, pa_fs.FileSystem]] = None,
-        parquet_read_options: Optional[ParquetReadOptions] = None,
-        schema: Optional[pyarrow.Schema] = None,
+        partitions: list[tuple[str, str, Any]] | None = None,
+        filesystem: str | pa_fs.FileSystem | None = None,
+        parquet_read_options: ParquetReadOptions | None = None,
+        schema: pyarrow.Schema | None = None,
         as_large_types: bool = False,
     ) -> pyarrow.dataset.Dataset:
         """
@@ -1034,10 +1016,10 @@ class DeltaTable:
 
     def to_pyarrow_table(
         self,
-        partitions: Optional[List[Tuple[str, str, Any]]] = None,
-        columns: Optional[List[str]] = None,
-        filesystem: Optional[Union[str, pa_fs.FileSystem]] = None,
-        filters: Optional[Union[FilterType, Expression]] = None,
+        partitions: list[tuple[str, str, Any]] | None = None,
+        columns: list[str] | None = None,
+        filesystem: str | pa_fs.FileSystem | None = None,
+        filters: FilterType | Expression | None = None,
     ) -> pyarrow.Table:
         """
         Build a PyArrow Table using data from the DeltaTable.
@@ -1056,10 +1038,10 @@ class DeltaTable:
 
     def to_pandas(
         self,
-        partitions: Optional[List[Tuple[str, str, Any]]] = None,
-        columns: Optional[List[str]] = None,
-        filesystem: Optional[Union[str, pa_fs.FileSystem]] = None,
-        filters: Optional[Union[FilterType, Expression]] = None,
+        partitions: list[tuple[str, str, Any]] | None = None,
+        columns: list[str] | None = None,
+        filesystem: str | pa_fs.FileSystem | None = None,
+        filters: FilterType | Expression | None = None,
     ) -> "pd.DataFrame":
         """
         Build a pandas dataframe using data from the DeltaTable.
@@ -1095,13 +1077,13 @@ class DeltaTable:
         self._table.cleanup_metadata()
 
     def __stringify_partition_values(
-        self, partition_filters: Optional[List[Tuple[str, str, Any]]]
-    ) -> Optional[List[Tuple[str, str, Union[str, List[str]]]]]:
+        self, partition_filters: list[tuple[str, str, Any]] | None
+    ) -> list[tuple[str, str, str | list[str]]] | None:
         if partition_filters is None:
             return partition_filters
         out = []
         for field, op, value in partition_filters:
-            str_value: Union[str, List[str]]
+            str_value: str | list[str]
             if isinstance(value, (list, tuple)):
                 str_value = [encode_partition_value(val) for val in value]
             else:
@@ -1152,10 +1134,10 @@ class DeltaTable:
 
     def delete(
         self,
-        predicate: Optional[str] = None,
-        writer_properties: Optional[WriterProperties] = None,
-        custom_metadata: Optional[Dict[str, str]] = None,
-    ) -> Dict[str, Any]:
+        predicate: str | None = None,
+        writer_properties: WriterProperties | None = None,
+        custom_metadata: dict[str, str] | None = None,
+    ) -> dict[str, Any]:
         """Delete records from a Delta Table that statisfy a predicate.
 
         When a predicate is not provided then all records are deleted from the Delta
@@ -1179,8 +1161,8 @@ class DeltaTable:
         return json.loads(metrics)
 
     def repair(
-        self, dry_run: bool = False, custom_metadata: Optional[Dict[str, str]] = None
-    ) -> Dict[str, Any]:
+        self, dry_run: bool = False, custom_metadata: dict[str, str] | None = None
+    ) -> dict[str, Any]:
         """Repair the Delta Table by auditing active files that do not exist in the underlying
         filesystem and removes them. This can be useful when there are accidental deletions or corrupted files.
 
@@ -1217,11 +1199,11 @@ class TableMerger:
         table: DeltaTable,
         source: pyarrow.RecordBatchReader,
         predicate: str,
-        source_alias: Optional[str] = None,
-        target_alias: Optional[str] = None,
+        source_alias: str | None = None,
+        target_alias: str | None = None,
         safe_cast: bool = True,
-        writer_properties: Optional[WriterProperties] = None,
-        custom_metadata: Optional[Dict[str, str]] = None,
+        writer_properties: WriterProperties | None = None,
+        custom_metadata: dict[str, str] | None = None,
     ):
         self.table = table
         self.source = source
@@ -1231,26 +1213,26 @@ class TableMerger:
         self.safe_cast = safe_cast
         self.writer_properties = writer_properties
         self.custom_metadata = custom_metadata
-        self.matched_update_updates: Optional[List[Dict[str, str]]] = None
-        self.matched_update_predicate: Optional[List[Optional[str]]] = None
-        self.matched_delete_predicate: Optional[List[str]] = None
-        self.matched_delete_all: Optional[bool] = None
-        self.not_matched_insert_updates: Optional[List[Dict[str, str]]] = None
-        self.not_matched_insert_predicate: Optional[List[Optional[str]]] = None
-        self.not_matched_by_source_update_updates: Optional[List[Dict[str, str]]] = None
-        self.not_matched_by_source_update_predicate: Optional[List[Optional[str]]] = (
+        self.matched_update_updates: list[dict[str, str]] | None = None
+        self.matched_update_predicate: list[str | None] | None = None
+        self.matched_delete_predicate: list[str] | None = None
+        self.matched_delete_all: bool | None = None
+        self.not_matched_insert_updates: list[dict[str, str]] | None = None
+        self.not_matched_insert_predicate: list[str | None] | None = None
+        self.not_matched_by_source_update_updates: list[dict[str, str]] | None = None
+        self.not_matched_by_source_update_predicate: list[str | None] | None = (
             None
         )
-        self.not_matched_by_source_delete_predicate: Optional[List[str]] = None
-        self.not_matched_by_source_delete_all: Optional[bool] = None
+        self.not_matched_by_source_delete_predicate: list[str] | None = None
+        self.not_matched_by_source_delete_all: bool | None = None
 
     def with_writer_properties(
         self,
-        data_page_size_limit: Optional[int] = None,
-        dictionary_page_size_limit: Optional[int] = None,
-        data_page_row_count_limit: Optional[int] = None,
-        write_batch_size: Optional[int] = None,
-        max_row_group_size: Optional[int] = None,
+        data_page_size_limit: int | None = None,
+        dictionary_page_size_limit: int | None = None,
+        data_page_row_count_limit: int | None = None,
+        write_batch_size: int | None = None,
+        max_row_group_size: int | None = None,
     ) -> "TableMerger":
         """
         !!! warning "Deprecated"
@@ -1273,7 +1255,7 @@ class TableMerger:
             stacklevel=2,
         )
 
-        writer_properties: Dict[str, Any] = {
+        writer_properties: dict[str, Any] = {
             "data_page_size_limit": data_page_size_limit,
             "dictionary_page_size_limit": dictionary_page_size_limit,
             "data_page_row_count_limit": data_page_row_count_limit,
@@ -1284,7 +1266,7 @@ class TableMerger:
         return self
 
     def when_matched_update(
-        self, updates: Dict[str, str], predicate: Optional[str] = None
+        self, updates: dict[str, str], predicate: str | None = None
     ) -> "TableMerger":
         """Update a matched table row based on the rules defined by ``updates``.
         If a ``predicate`` is specified, then it must evaluate to true for the row to be updated.
@@ -1338,7 +1320,7 @@ class TableMerger:
             self.matched_update_predicate = [predicate]
         return self
 
-    def when_matched_update_all(self, predicate: Optional[str] = None) -> "TableMerger":
+    def when_matched_update_all(self, predicate: str | None = None) -> "TableMerger":
         """Updating all source fields to target fields, source and target are required to have the same field names.
         If a ``predicate`` is specified, then it must evaluate to true for the row to be updated.
 
@@ -1400,7 +1382,7 @@ class TableMerger:
 
         return self
 
-    def when_matched_delete(self, predicate: Optional[str] = None) -> "TableMerger":
+    def when_matched_delete(self, predicate: str | None = None) -> "TableMerger":
         """Delete a matched row from the table only if the given ``predicate`` (if specified) is
         true for the matched row. If not specified it deletes all matches.
 
@@ -1479,7 +1461,7 @@ class TableMerger:
         return self
 
     def when_not_matched_insert(
-        self, updates: Dict[str, str], predicate: Optional[str] = None
+        self, updates: dict[str, str], predicate: str | None = None
     ) -> "TableMerger":
         """Insert a new row to the target table based on the rules defined by ``updates``. If a
         ``predicate`` is specified, then it must evaluate to true for the new row to be inserted.
@@ -1541,7 +1523,7 @@ class TableMerger:
         return self
 
     def when_not_matched_insert_all(
-        self, predicate: Optional[str] = None
+        self, predicate: str | None = None
     ) -> "TableMerger":
         """Insert a new row to the target table, updating all source fields to target fields. Source and target are
         required to have the same field names. If a ``predicate`` is specified, then it must evaluate to true for
@@ -1605,7 +1587,7 @@ class TableMerger:
         return self
 
     def when_not_matched_by_source_update(
-        self, updates: Dict[str, str], predicate: Optional[str] = None
+        self, updates: dict[str, str], predicate: str | None = None
     ) -> "TableMerger":
         """Update a target row that has no matches in the source based on the rules defined by ``updates``.
         If a ``predicate`` is specified, then it must evaluate to true for the row to be updated.
@@ -1663,7 +1645,7 @@ class TableMerger:
         return self
 
     def when_not_matched_by_source_delete(
-        self, predicate: Optional[str] = None
+        self, predicate: str | None = None
     ) -> "TableMerger":
         """Delete a target row that has no matches in the source from the table only if the given
         ``predicate`` (if specified) is true for the target row.
@@ -1693,7 +1675,7 @@ class TableMerger:
                 self.not_matched_by_source_delete_predicate = [predicate]
         return self
 
-    def execute(self) -> Dict[str, Any]:
+    def execute(self) -> dict[str, Any]:
         """Executes `MERGE` with the previously provided settings in Rust with Apache Datafusion query engine.
 
         Returns:
@@ -1732,8 +1714,8 @@ class TableAlterer:
 
     def add_constraint(
         self,
-        constraints: Dict[str, str],
-        custom_metadata: Optional[Dict[str, str]] = None,
+        constraints: dict[str, str],
+        custom_metadata: dict[str, str] | None = None,
     ) -> None:
         """
         Add constraints to the table. Limited to `single constraint` at once.
@@ -1768,7 +1750,7 @@ class TableAlterer:
         self,
         name: str,
         raise_if_not_exists: bool = True,
-        custom_metadata: Optional[Dict[str, str]] = None,
+        custom_metadata: dict[str, str] | None = None,
     ) -> None:
         """
         Drop constraints from a table. Limited to `single constraint` at once.
@@ -1800,9 +1782,9 @@ class TableAlterer:
 
     def set_table_properties(
         self,
-        properties: Dict[str, str],
+        properties: dict[str, str],
         raise_if_not_exists: bool = True,
-        custom_metadata: Optional[Dict[str, str]] = None,
+        custom_metadata: dict[str, str] | None = None,
     ) -> None:
         """
         Unset properties from the table.
@@ -1825,10 +1807,10 @@ class TableOptimizer:
 
     def __call__(
         self,
-        partition_filters: Optional[FilterType] = None,
-        target_size: Optional[int] = None,
-        max_concurrent_tasks: Optional[int] = None,
-    ) -> Dict[str, Any]:
+        partition_filters: FilterType | None = None,
+        target_size: int | None = None,
+        max_concurrent_tasks: int | None = None,
+    ) -> dict[str, Any]:
         """
         !!! warning "DEPRECATED 0.10.0"
             Use [compact][deltalake.table.DeltaTable.compact] instead, which has the same signature.
@@ -1844,13 +1826,13 @@ class TableOptimizer:
 
     def compact(
         self,
-        partition_filters: Optional[FilterType] = None,
-        target_size: Optional[int] = None,
-        max_concurrent_tasks: Optional[int] = None,
-        min_commit_interval: Optional[Union[int, timedelta]] = None,
-        writer_properties: Optional[WriterProperties] = None,
-        custom_metadata: Optional[Dict[str, str]] = None,
-    ) -> Dict[str, Any]:
+        partition_filters: FilterType | None = None,
+        target_size: int | None = None,
+        max_concurrent_tasks: int | None = None,
+        min_commit_interval: int | timedelta | None = None,
+        writer_properties: WriterProperties | None = None,
+        custom_metadata: dict[str, str] | None = None,
+    ) -> dict[str, Any]:
         """
         Compacts small files to reduce the total number of files in the table.
 
@@ -1910,14 +1892,14 @@ class TableOptimizer:
     def z_order(
         self,
         columns: Iterable[str],
-        partition_filters: Optional[FilterType] = None,
-        target_size: Optional[int] = None,
-        max_concurrent_tasks: Optional[int] = None,
+        partition_filters: FilterType | None = None,
+        target_size: int | None = None,
+        max_concurrent_tasks: int | None = None,
         max_spill_size: int = 20 * 1024 * 1024 * 1024,
-        min_commit_interval: Optional[Union[int, timedelta]] = None,
-        writer_properties: Optional[WriterProperties] = None,
-        custom_metadata: Optional[Dict[str, str]] = None,
-    ) -> Dict[str, Any]:
+        min_commit_interval: int | timedelta | None = None,
+        writer_properties: WriterProperties | None = None,
+        custom_metadata: dict[str, str] | None = None,
+    ) -> dict[str, Any]:
         """
         Reorders the data using a Z-order curve to improve data skipping.
 

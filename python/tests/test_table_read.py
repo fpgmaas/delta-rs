@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import os
 from datetime import date, datetime, timezone
 from pathlib import Path
 from threading import Barrier, Thread
 from types import SimpleNamespace
-from typing import Any, List, Tuple
+from typing import Any
 from unittest.mock import Mock
 
 from packaging import version
@@ -120,7 +122,7 @@ def test_load_as_version_datetime_with_logs_removed(
     sample_table,
     date_value: str,
     expected_version,
-    log_mtime_pairs: List[Tuple[str, int]],
+    log_mtime_pairs: list[tuple[str, int]],
 ):
     log_path = tmp_path / "_delta_log"
     for i in range(6):

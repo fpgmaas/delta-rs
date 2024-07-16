@@ -1,4 +1,4 @@
-from typing import List
+from __future__ import annotations
 
 import pyarrow as pa
 
@@ -31,7 +31,7 @@ def get_spark():
 
 
 def assert_spark_read_equal(
-    expected: pa.Table, uri: str, sort_by: List[str] = ["int32"]
+    expected: pa.Table, uri: str, sort_by: list[str] = ["int32"]
 ):
     spark = get_spark()
     df = spark.read.format("delta").load(uri)

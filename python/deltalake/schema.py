@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Generator, Union
 
 import pyarrow as pa
@@ -63,8 +65,8 @@ def _convert_pa_schema_to_delta(
             return dtype
 
     def list_to_delta_dtype(
-        dtype: Union[pa.LargeListType, pa.ListType],
-    ) -> Union[pa.LargeListType, pa.ListType]:
+        dtype: pa.LargeListType | pa.ListType,
+    ) -> pa.LargeListType | pa.ListType:
         nested_dtype = dtype.value_type
         nested_dtype_cast = dtype_to_delta_dtype(nested_dtype)
         if large_dtypes:

@@ -1,4 +1,5 @@
 """Tests that deltalake(delta-rs) can write to tables written by PySpark."""
+from __future__ import annotations
 
 import pathlib
 

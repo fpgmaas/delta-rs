@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import sys
 import uuid
@@ -8,15 +10,9 @@ from math import inf
 from pathlib import Path
 from typing import (
     Any,
-    Dict,
-    FrozenSet,
     Iterable,
     Iterator,
-    List,
     Mapping,
-    Optional,
-    Tuple,
-    Union,
     overload,
 )
 from urllib.parse import unquote
@@ -74,7 +70,7 @@ DEFAULT_DATA_SKIPPING_NUM_INDEX_COLS = 32
 class AddAction:
     path: str
     size: int
-    partition_values: Mapping[str, Optional[str]]
+    partition_values: Mapping[str, str | None]
     modification_time: int
     data_change: bool
     stats: str
@@ -82,123 +78,95 @@ class AddAction:
 
 @overload
 def write_deltalake(
-    table_or_uri: Union[str, Path, DeltaTable],
-    data: Union[
-        "pd.DataFrame",
-        ds.Dataset,
-        pa.Table,
-        pa.RecordBatch,
-        Iterable[pa.RecordBatch],
-        RecordBatchReader,
-    ],
+    table_or_uri: str | Path | DeltaTable,
+    data: "pd.DataFrame" | ds.Dataset | pa.Table | pa.RecordBatch | Iterable[pa.RecordBatch] | RecordBatchReader,
     *,
-    schema: Optional[Union[pa.Schema, DeltaSchema]] = ...,
-    partition_by: Optional[Union[List[str], str]] = ...,
+    schema: pa.Schema | DeltaSchema | None = ...,
+    partition_by: list[str] | str | None = ...,
     mode: Literal["error", "append", "overwrite", "ignore"] = ...,
-    file_options: Optional[ds.ParquetFileWriteOptions] = ...,
-    max_partitions: Optional[int] = ...,
+    file_options: ds.ParquetFileWriteOptions | None = ...,
+    max_partitions: int | None = ...,
     max_open_files: int = ...,
     max_rows_per_file: int = ...,
     min_rows_per_group: int = ...,
     max_rows_per_group: int = ...,
-    name: Optional[str] = ...,
-    description: Optional[str] = ...,
-    configuration: Optional[Mapping[str, Optional[str]]] = ...,
-    schema_mode: Optional[Literal["overwrite"]] = ...,
-    storage_options: Optional[Dict[str, str]] = ...,
-    partition_filters: Optional[List[Tuple[str, str, Any]]] = ...,
+    name: str | None = ...,
+    description: str | None = ...,
+    configuration: Mapping[str, str | None] | None = ...,
+    schema_mode: Literal["overwrite"] | None = ...,
+    storage_options: dict[str, str] | None = ...,
+    partition_filters: list[tuple[str, str, Any]] | None = ...,
     large_dtypes: bool = ...,
     engine: Literal["pyarrow"] = ...,
-    custom_metadata: Optional[Dict[str, str]] = ...,
+    custom_metadata: dict[str, str] | None = ...,
 ) -> None: ...
 
 
 @overload
 def write_deltalake(
-    table_or_uri: Union[str, Path, DeltaTable],
-    data: Union[
-        "pd.DataFrame",
-        ds.Dataset,
-        pa.Table,
-        pa.RecordBatch,
-        Iterable[pa.RecordBatch],
-        RecordBatchReader,
-    ],
+    table_or_uri: str | Path | DeltaTable,
+    data: "pd.DataFrame" | ds.Dataset | pa.Table | pa.RecordBatch | Iterable[pa.RecordBatch] | RecordBatchReader,
     *,
-    schema: Optional[Union[pa.Schema, DeltaSchema]] = ...,
-    partition_by: Optional[Union[List[str], str]] = ...,
+    schema: pa.Schema | DeltaSchema | None = ...,
+    partition_by: list[str] | str | None = ...,
     mode: Literal["error", "append", "ignore"] = ...,
-    name: Optional[str] = ...,
-    description: Optional[str] = ...,
-    configuration: Optional[Mapping[str, Optional[str]]] = ...,
-    schema_mode: Optional[Literal["merge", "overwrite"]] = ...,
-    storage_options: Optional[Dict[str, str]] = ...,
+    name: str | None = ...,
+    description: str | None = ...,
+    configuration: Mapping[str, str | None] | None = ...,
+    schema_mode: Literal["merge", "overwrite"] | None = ...,
+    storage_options: dict[str, str] | None = ...,
     large_dtypes: bool = ...,
     engine: Literal["rust"],
     writer_properties: WriterProperties = ...,
-    custom_metadata: Optional[Dict[str, str]] = ...,
+    custom_metadata: dict[str, str] | None = ...,
 ) -> None: ...
 
 
 @overload
 def write_deltalake(
-    table_or_uri: Union[str, Path, DeltaTable],
-    data: Union[
-        "pd.DataFrame",
-        ds.Dataset,
-        pa.Table,
-        pa.RecordBatch,
-        Iterable[pa.RecordBatch],
-        RecordBatchReader,
-    ],
+    table_or_uri: str | Path | DeltaTable,
+    data: "pd.DataFrame" | ds.Dataset | pa.Table | pa.RecordBatch | Iterable[pa.RecordBatch] | RecordBatchReader,
     *,
-    schema: Optional[Union[pa.Schema, DeltaSchema]] = ...,
-    partition_by: Optional[Union[List[str], str]] = ...,
+    schema: pa.Schema | DeltaSchema | None = ...,
+    partition_by: list[str] | str | None = ...,
     mode: Literal["overwrite"],
-    name: Optional[str] = ...,
-    description: Optional[str] = ...,
-    configuration: Optional[Mapping[str, Optional[str]]] = ...,
-    schema_mode: Optional[Literal["merge", "overwrite"]] = ...,
-    storage_options: Optional[Dict[str, str]] = ...,
-    predicate: Optional[str] = ...,
+    name: str | None = ...,
+    description: str | None = ...,
+    configuration: Mapping[str, str | None] | None = ...,
+    schema_mode: Literal["merge", "overwrite"] | None = ...,
+    storage_options: dict[str, str] | None = ...,
+    predicate: str | None = ...,
     large_dtypes: bool = ...,
     engine: Literal["rust"],
     writer_properties: WriterProperties = ...,
-    custom_metadata: Optional[Dict[str, str]] = ...,
+    custom_metadata: dict[str, str] | None = ...,
 ) -> None: ...
 
 
 def write_deltalake(
-    table_or_uri: Union[str, Path, DeltaTable],
-    data: Union[
-        "pd.DataFrame",
-        ds.Dataset,
-        pa.Table,
-        pa.RecordBatch,
-        Iterable[pa.RecordBatch],
-        RecordBatchReader,
-    ],
+    table_or_uri: str | Path | DeltaTable,
+    data: "pd.DataFrame" | ds.Dataset | pa.Table | pa.RecordBatch | Iterable[pa.RecordBatch] | RecordBatchReader,
     *,
-    schema: Optional[Union[pa.Schema, DeltaSchema]] = None,
-    partition_by: Optional[Union[List[str], str]] = None,
+    schema: pa.Schema | DeltaSchema | None = None,
+    partition_by: list[str] | str | None = None,
     mode: Literal["error", "append", "overwrite", "ignore"] = "error",
-    file_options: Optional[ds.ParquetFileWriteOptions] = None,
-    max_partitions: Optional[int] = None,
+    file_options: ds.ParquetFileWriteOptions | None = None,
+    max_partitions: int | None = None,
     max_open_files: int = 1024,
     max_rows_per_file: int = 10 * 1024 * 1024,
     min_rows_per_group: int = 64 * 1024,
     max_rows_per_group: int = 128 * 1024,
-    name: Optional[str] = None,
-    description: Optional[str] = None,
-    configuration: Optional[Mapping[str, Optional[str]]] = None,
-    schema_mode: Optional[Literal["merge", "overwrite"]] = None,
-    storage_options: Optional[Dict[str, str]] = None,
-    partition_filters: Optional[List[Tuple[str, str, Any]]] = None,
-    predicate: Optional[str] = None,
+    name: str | None = None,
+    description: str | None = None,
+    configuration: Mapping[str, str | None] | None = None,
+    schema_mode: Literal["merge", "overwrite"] | None = None,
+    storage_options: dict[str, str] | None = None,
+    partition_filters: list[tuple[str, str, Any]] | None = None,
+    predicate: str | None = None,
     large_dtypes: bool = False,
     engine: Literal["pyarrow", "rust"] = "pyarrow",
-    writer_properties: Optional[WriterProperties] = None,
-    custom_metadata: Optional[Dict[str, str]] = None,
+    writer_properties: WriterProperties | None = None,
+    custom_metadata: dict[str, str] | None = None,
 ) -> None:
     """Write to a Delta Lake table
 
@@ -401,7 +369,7 @@ def write_deltalake(
         else:
             partitioning = None
 
-        add_actions: List[AddAction] = []
+        add_actions: list[AddAction] = []
 
         def visitor(written_file: Any) -> None:
             path, partition_values = get_partitions_from_path(written_file.path)
@@ -466,10 +434,10 @@ def write_deltalake(
             ) -> None:
                 if table is None:
                     return
-                existed_partitions: FrozenSet[FrozenSet[Tuple[str, Optional[str]]]] = (
+                existed_partitions: frozenset[frozenset[tuple[str, str | None]]] = (
                     table._table.get_active_partitions()
                 )
-                allowed_partitions: FrozenSet[FrozenSet[Tuple[str, Optional[str]]]] = (
+                allowed_partitions: frozenset[frozenset[tuple[str, str | None]]] = (
                     table._table.get_active_partitions(partition_filters)
                 )
                 partition_values = pa.RecordBatch.from_arrays(
@@ -567,15 +535,15 @@ def write_deltalake(
 
 
 def convert_to_deltalake(
-    uri: Union[str, Path],
+    uri: str | Path,
     mode: Literal["error", "ignore"] = "error",
-    partition_by: Optional[pa.Schema] = None,
-    partition_strategy: Optional[Literal["hive"]] = None,
-    name: Optional[str] = None,
-    description: Optional[str] = None,
-    configuration: Optional[Mapping[str, Optional[str]]] = None,
-    storage_options: Optional[Dict[str, str]] = None,
-    custom_metadata: Optional[Dict[str, str]] = None,
+    partition_by: pa.Schema | None = None,
+    partition_strategy: Literal["hive"] | None = None,
+    name: str | None = None,
+    description: str | None = None,
+    configuration: Mapping[str, str | None] | None = None,
+    storage_options: dict[str, str] | None = None,
+    custom_metadata: dict[str, str] | None = None,
 ) -> None:
     """
     `Convert` parquet tables `to delta` tables.
@@ -621,8 +589,8 @@ def convert_to_deltalake(
 
 
 def __enforce_append_only(
-    table: Optional[DeltaTable],
-    configuration: Optional[Mapping[str, Optional[str]]],
+    table: DeltaTable | None,
+    configuration: Mapping[str, str | None] | None,
     mode: str,
 ) -> None:
     """Throw ValueError if table configuration contains delta.appendOnly and mode is not append"""
@@ -653,9 +621,9 @@ class DeltaJSONEncoder(json.JSONEncoder):
 
 
 def try_get_table_and_table_uri(
-    table_or_uri: Union[str, Path, DeltaTable],
-    storage_options: Optional[Dict[str, str]] = None,
-) -> Tuple[Optional[DeltaTable], str]:
+    table_or_uri: str | Path | DeltaTable,
+    storage_options: dict[str, str] | None = None,
+) -> tuple[DeltaTable | None, str]:
     """Parses the `table_or_uri`.
     Raises [ValueError] If `table_or_uri` is not of type str, Path or DeltaTable.
 
@@ -680,20 +648,20 @@ def try_get_table_and_table_uri(
 
 
 def try_get_deltatable(
-    table_uri: Union[str, Path], storage_options: Optional[Dict[str, str]]
-) -> Optional[DeltaTable]:
+    table_uri: str | Path, storage_options: dict[str, str] | None
+) -> DeltaTable | None:
     try:
         return DeltaTable(table_uri, storage_options=storage_options)
     except TableNotFoundError:
         return None
 
 
-def get_partitions_from_path(path: str) -> Tuple[str, Dict[str, Optional[str]]]:
+def get_partitions_from_path(path: str) -> tuple[str, dict[str, str | None]]:
     if path[0] == "/":
         path = path[1:]
     parts = path.split("/")
     parts.pop()  # remove filename
-    out: Dict[str, Optional[str]] = {}
+    out: dict[str, str | None] = {}
     for part in parts:
         if part == "":
             continue
@@ -708,8 +676,8 @@ def get_partitions_from_path(path: str) -> Tuple[str, Dict[str, Optional[str]]]:
 def get_file_stats_from_metadata(
     metadata: Any,
     num_indexed_cols: int,
-    columns_to_collect_stats: Optional[List[str]],
-) -> Dict[str, Union[int, Dict[str, Any]]]:
+    columns_to_collect_stats: list[str] | None,
+) -> dict[str, int | dict[str, Any]]:
     stats = {
         "numRecords": metadata.num_rows,
         "minValues": {},

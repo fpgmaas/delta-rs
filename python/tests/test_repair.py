@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 
 from deltalake import DeltaTable, write_deltalake
