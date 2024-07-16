@@ -262,39 +262,11 @@ def write_deltalake(
         table.update_incremental()
 
     __enforce_append_only(table=table, configuration=configuration, mode=mode)
+
     if isinstance(partition_by, str):
         partition_by = [partition_by]
 
-    if isinstance(schema, DeltaSchema):
-        schema = schema.to_pyarrow(as_large_types=large_dtypes)
-
-    if isinstance(data, RecordBatchReader):
-        data = convert_pyarrow_recordbatchreader(data, large_dtypes)
-    elif isinstance(data, pa.RecordBatch):
-        data = convert_pyarrow_recordbatch(data, large_dtypes)
-    elif isinstance(data, pa.Table):
-        data = convert_pyarrow_table(data, large_dtypes)
-    elif isinstance(data, ds.Dataset):
-        data = convert_pyarrow_dataset(data, large_dtypes)
-    elif _has_pandas and isinstance(data, pd.DataFrame):
-        if schema is not None:
-            data = convert_pyarrow_table(
-                pa.Table.from_pandas(data, schema=schema), large_dtypes=large_dtypes
-            )
-        else:
-            data = convert_pyarrow_table(
-                pa.Table.from_pandas(data), large_dtypes=large_dtypes
-            )
-    elif isinstance(data, Iterable):
-        if schema is None:
-            raise ValueError("You must provide schema if data is Iterable")
-    else:
-        raise TypeError(
-            f"{type(data).__name__} is not a valid input. Only PyArrow RecordBatchReader, RecordBatch, Iterable[RecordBatch], Table, Dataset or Pandas DataFrame are valid inputs for source."
-        )
-
-    if schema is None:
-        schema = data.schema
+    data, schema = __convert_data_and_schema(data=data, schema=schema, large_dtypes=large_dtypes)
 
     if engine == "rust":
         if table is not None and mode == "ignore":
@@ -619,6 +591,50 @@ def convert_to_deltalake(
     )
     return
 
+def __convert_data_and_schema(
+        data: Union[
+        "pd.DataFrame",
+        ds.Dataset,
+        pa.Table,
+        pa.RecordBatch,
+        Iterable[pa.RecordBatch],
+        RecordBatchReader,
+    ],
+    schema: Optional[Union[pa.Schema, DeltaSchema]],
+    large_dtypes: bool
+    ) -> Tuple[Any, Any]:
+
+    if isinstance(schema, DeltaSchema):
+        schema = schema.to_pyarrow(as_large_types=large_dtypes)
+    if isinstance(data, RecordBatchReader):
+        data = convert_pyarrow_recordbatchreader(data, large_dtypes)
+    elif isinstance(data, pa.RecordBatch):
+        data = convert_pyarrow_recordbatch(data, large_dtypes)
+    elif isinstance(data, pa.Table):
+        data = convert_pyarrow_table(data, large_dtypes)
+    elif isinstance(data, ds.Dataset):
+        data = convert_pyarrow_dataset(data, large_dtypes)
+    elif _has_pandas and isinstance(data, pd.DataFrame):
+        if schema is not None:
+            data = convert_pyarrow_table(
+                pa.Table.from_pandas(data, schema=schema), large_dtypes=large_dtypes
+            )
+        else:
+            data = convert_pyarrow_table(
+                pa.Table.from_pandas(data), large_dtypes=large_dtypes
+            )
+    elif isinstance(data, Iterable):
+        if schema is None:
+            raise ValueError("You must provide schema if data is Iterable")
+    else:
+        raise TypeError(
+            f"{type(data).__name__} is not a valid input. Only PyArrow RecordBatchReader, RecordBatch, Iterable[RecordBatch], Table, Dataset or Pandas DataFrame are valid inputs for source."
+        )
+
+    if schema is None:
+        schema = data.schema
+
+    return data, schema
 
 def __enforce_append_only(
     table: Optional[DeltaTable],
