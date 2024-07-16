@@ -83,12 +83,17 @@ select = [
     # pyflakes
     "F",
     # isort
-    "I"
+    "I",
+    # non-pep585-annotation
+    "UP006",
+    # non-pep604-annotation
+    "UP007"
 ]
 ignore = ["E501"]
 
 [tool.ruff.isort]
 known-first-party = ["deltalake"]
+required-imports = ["from __future__ import annotations"]
 
 [tool.pytest.ini_options]
 addopts = "--cov=deltalake -v -m 'not integration and not benchmark'"
