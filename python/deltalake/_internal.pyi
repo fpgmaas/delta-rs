@@ -831,4 +831,4 @@ class SchemaMismatchError(DeltaError):
 FilterLiteralType = tuple[str, str, Any]
 FilterConjunctionType = list[FilterLiteralType]
 FilterDNFType = list[FilterConjunctionType]
-FilterType = Union[FilterConjunctionType, FilterDNFType]
+FilterType = Union[FilterConjunctionType, FilterDNFType] # noqa: UP007
